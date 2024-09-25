@@ -4,28 +4,39 @@ const API_URL = "http://localhost:8080";
 
 function App() {
   const [data, setData] = useState<string>();
+  const [status, setStatus] = useState<string>("");
 
   useEffect(() => {
     getData();
   }, []);
 
   const getData = async () => {
-    const response = await fetch(API_URL);
-    const { data } = await response.json();
-    setData(data);
+    setStatus("");
+    try {
+      const response = await fetch(`${API_URL}/`);
+      const { data } = await response.json();
+      setData(data);
+    } catch (error) {
+      setStatus("Error fetching data");
+    }
   };
 
   const updateData = async () => {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ data }),
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    });
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ data }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
 
-    await getData();
+      await getData();
+      setStatus("Data updated successfully");
+    } catch (error) {
+      setStatus("Error updating data");
+    }
   };
 
   const verifyData = async () => {
@@ -63,6 +74,12 @@ function App() {
           Verify Data
         </button>
       </div>
+
+      {status && (
+        <div style={{ color: "red", fontSize: "20px", marginTop: "20px" }}>
+          {status}
+        </div>
+      )}
     </div>
   );
 }
