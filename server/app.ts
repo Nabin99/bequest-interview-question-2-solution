@@ -29,11 +29,28 @@ app.get("/", (req, res) => {
 
 app.post("/", (req, res) => {
   const { data } = req.body;
+
   if (typeof data === "string") {
     database.data = data;
     storeDataHash(database.data); // Update hash whenever data is modified
     createBackupData(database); // Update the backup
     res.sendStatus(200);
+  } else {
+    res
+      .status(400)
+      .json({ message: "Invalid data format. Expecting a string." });
+  }
+});
+
+// API to update data without updating the hash (for testing unverified changes)
+app.post("/unverified-update", (req, res) => {
+  const { data } = req.body;
+
+  if (typeof data === "string") {
+    database.data = data;
+
+    // Do not update hash or backup here
+    res.json({ message: "Data updated without verifying the hash" });
   } else {
     res
       .status(400)
