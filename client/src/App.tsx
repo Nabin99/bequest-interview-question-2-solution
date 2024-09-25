@@ -4,32 +4,80 @@ const API_URL = "http://localhost:8080";
 
 function App() {
   const [data, setData] = useState<string>();
+  const [status, setStatus] = useState<string>("");
 
   useEffect(() => {
     getData();
   }, []);
 
   const getData = async () => {
-    const response = await fetch(API_URL);
-    const { data } = await response.json();
-    setData(data);
+    setStatus("");
+    try {
+      const response = await fetch(`${API_URL}/`);
+      const { data } = await response.json();
+      setData(data);
+    } catch (error) {
+      setStatus("Error fetching data");
+    }
   };
 
   const updateData = async () => {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ data }),
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    });
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ data }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
 
-    await getData();
+      await getData();
+      setStatus("Data updated successfully");
+    } catch (error) {
+      setStatus("Error updating data");
+    }
   };
 
+  const updateUnverifiedData = async () => {
+    try {
+      const response = await fetch(`${API_URL}/unverified-update`, {
+        method: "POST",
+        body: JSON.stringify({ data }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      // await getData();
+      setStatus(result.message);
+    } catch (error) {
+      console.log(error);
+      setStatus("Error updating data");
+    }
+  };
+
+  // Verify the integrity of the data on the server
   const verifyData = async () => {
-    throw new Error("Not implemented");
+    setStatus("Verifying data...");
+
+    try {
+      const response = await fetch(`${API_URL}/recover-data`, {
+        method: "POST",
+      });
+
+      const result = await response.json();
+
+      if (result.message.includes("recovered")) {
+        setData(result.recoveredData.data); // Update the UI with recovered data if tampered
+      }
+
+      setStatus(result.message); // Display the verification result
+    } catch (error) {
+      setStatus("Error verifying data");
+    }
   };
 
   return (
@@ -59,10 +107,19 @@ function App() {
         <button style={{ fontSize: "20px" }} onClick={updateData}>
           Update Data
         </button>
+        <button style={{ fontSize: "20px" }} onClick={updateUnverifiedData}>
+          {"Tamper Data (Update without hashes)"}
+        </button>
         <button style={{ fontSize: "20px" }} onClick={verifyData}>
           Verify Data
         </button>
       </div>
+
+      {status && (
+        <div style={{ color: "red", fontSize: "20px", marginTop: "20px" }}>
+          {status}
+        </div>
+      )}
     </div>
   );
 }
