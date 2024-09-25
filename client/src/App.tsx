@@ -39,8 +39,25 @@ function App() {
     }
   };
 
+  // Verify the integrity of the data on the server
   const verifyData = async () => {
-    throw new Error("Not implemented");
+    setStatus("Verifying data...");
+
+    try {
+      const response = await fetch(`${API_URL}/recover-data`, {
+        method: "POST",
+      });
+
+      const result = await response.json();
+
+      if (result.message.includes("recovered")) {
+        setData(result.recoveredData.data); // Update the UI with recovered data if tampered
+      }
+
+      setStatus(result.message); // Display the verification result
+    } catch (error) {
+      setStatus("Error verifying data");
+    }
   };
 
   return (
