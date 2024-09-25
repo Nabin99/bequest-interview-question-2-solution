@@ -108,7 +108,7 @@ function App() {
           Update Data
         </button>
         <button style={{ fontSize: "20px" }} onClick={updateUnverifiedData}>
-          {"Temper Data (Update without hashes)"}
+          {"Tamper Data (Update without hashes)"}
         </button>
         <button style={{ fontSize: "20px" }} onClick={verifyData}>
           Verify Data
