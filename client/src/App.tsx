@@ -39,6 +39,26 @@ function App() {
     }
   };
 
+  const updateUnverifiedData = async () => {
+    try {
+      const response = await fetch(`${API_URL}/unverified-update`, {
+        method: "POST",
+        body: JSON.stringify({ data }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      // await getData();
+      setStatus(result.message);
+    } catch (error) {
+      console.log(error);
+      setStatus("Error updating data");
+    }
+  };
+
   // Verify the integrity of the data on the server
   const verifyData = async () => {
     setStatus("Verifying data...");
@@ -86,6 +106,9 @@ function App() {
       <div style={{ display: "flex", gap: "10px" }}>
         <button style={{ fontSize: "20px" }} onClick={updateData}>
           Update Data
+        </button>
+        <button style={{ fontSize: "20px" }} onClick={updateUnverifiedData}>
+          {"Temper Data (Update without hashes)"}
         </button>
         <button style={{ fontSize: "20px" }} onClick={verifyData}>
           Verify Data
