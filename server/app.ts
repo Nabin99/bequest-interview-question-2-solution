@@ -1,7 +1,14 @@
 import express from "express";
 import cors from "cors";
+import fs from "fs";
 
-import { storeDataHash, createBackupData } from "./utils";
+import {
+  storeDataHash,
+  createBackupData,
+  dataHashFilePath,
+  calculateDataHash,
+  getLastKnownGoodData,
+} from "./utils";
 
 const PORT = 8080;
 const app = express();
@@ -31,6 +38,28 @@ app.post("/", (req, res) => {
     res
       .status(400)
       .json({ message: "Invalid data format. Expecting a string." });
+  }
+});
+
+// Verify and recover the data if it has been tampered with
+app.post("/recover-data", (req, res) => {
+  const storedHash = fs.readFileSync(dataHashFilePath, "utf8");
+  const calculatedHash = calculateDataHash(database.data);
+
+  if (calculatedHash !== storedHash) {
+    // Data has been tampered with, recover the last known good state
+    const lastGoodData = getLastKnownGoodData();
+    database.data = lastGoodData.data;
+
+    // Update the stored hash after recovery
+    storeDataHash(database.data);
+
+    res.json({
+      message: "Data has been tampered with and recovered successfully",
+      recoveredData: database,
+    });
+  } else {
+    res.json({ message: "Data integrity verified. No tampering detected." });
   }
 });
 
